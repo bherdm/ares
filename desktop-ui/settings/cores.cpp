@@ -50,6 +50,30 @@ auto CoreSettings::construct() -> void {
     nintendo64ControllerPakBankLabel.setText("Controller Pak Size:");
     nintendo64ControllerPakBankHint.setText("Sets the size of a newly created Controller Pak's available memory").setFont(Font().setSize(7.0)).setForegroundColor(SystemColor::Sublabel);
 
+  nintendo64SummerCart64Option.setText("SummerCart64").setChecked(settings.nintendo64.summerCart64).onToggle([&] {
+    settings.nintendo64.summerCart64 = nintendo64SummerCart64Option.checked();
+  });
+  nintendo64SummerCart64Layout.setAlignment(1).setPadding(12_sx, 0);
+    nintendo64SummerCart64Hint.setText("Emulate the SC64 flashcart: 64 MiB writable ROM, its registers and USB debug output").setFont(Font().setSize(7.0)).setForegroundColor(SystemColor::Sublabel);
+  nintendo64SDImageLayout.setAlignment(0.5).setPadding(12_sx, 0);
+    nintendo64SDImageLabel.setText("SC64 SD Card Image:");
+    nintendo64SDImagePath.setEditable(false).setText(settings.nintendo64.summerCart64SDImage);
+    nintendo64SDImageAssign.setText("Assign\u2026").onActivate([&] {
+      BrowserDialog dialog;
+      dialog.setTitle("Select SD Card Image");
+      dialog.setPath(Path::desktop());
+      dialog.setAlignment(settingsWindow);
+      dialog.setFilters({"Disk Images|*.img:*.bin:*.iso", "All|*"});
+      if(auto location = program.openFile(dialog)) {
+        settings.nintendo64.summerCart64SDImage = location;
+        nintendo64SDImagePath.setText(location);
+      }
+    });
+    nintendo64SDImageReset.setText("Clear").onActivate([&] {
+      settings.nintendo64.summerCart64SDImage = "";
+      nintendo64SDImagePath.setText("");
+    });
+
     renderQualityLayout.setPadding(12_sx, 0);
 
   disableVideoInterfaceProcessingOption.setText("Disable Video Interface Processing").setChecked(settings.nintendo64.disableVideoInterfaceProcessing).onToggle([&] {

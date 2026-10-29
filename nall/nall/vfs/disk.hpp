@@ -43,7 +43,9 @@ private:
   auto operator=(const disk&) -> disk& = delete;
 
   auto _open(string location_, mode mode_) -> bool {
-    if(!_fp.open(location_, (u32)mode_)) return false;
+    //file_map::mode::write maps PROT_WRITE alone and creates missing files;
+    //a writable disk needs an existing file mapped for reading and writing
+    if(!_fp.open(location_, mode_ == mode::write ? file_map::mode::modify : file_map::mode::read)) return false;
     _data = _fp.data();
     _size = _fp.size();
     _writable = mode_ == mode::write;

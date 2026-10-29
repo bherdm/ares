@@ -45,6 +45,7 @@ auto option(string name, string value) -> bool {
     }
   }
   if(Model::Nintendo64() && name == "Expansion Pak") system.expansionPak = value.boolean();
+  if(Model::Nintendo64() && name == "SummerCart64") system.summerCart64 = value.boolean();
   if(Model::Nintendo64() && name == "Controller Pak Banks") {
     if (value == "32KiB (Default)") {
       system.configuredControllerPakBankCount = 1;

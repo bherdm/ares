@@ -148,6 +148,16 @@ auto Nintendo64::load() -> LoadResult {
   ares::Nintendo64::option("Recompiler", !settings.developer.forceInterpreter);
   ares::Nintendo64::option("Expansion Pak", settings.nintendo64.expansionPak);
   ares::Nintendo64::option("Controller Pak Banks", settings.nintendo64.controllerPakBankString);
+  ares::Nintendo64::option("SummerCart64", settings.nintendo64.summerCart64);
+
+  //the SD card image is mapped, not loaded: writes from the N64 go straight to the file
+  if(settings.nintendo64.summerCart64 && settings.nintendo64.summerCart64SDImage) {
+    if(auto sd = vfs::disk::open(settings.nintendo64.summerCart64SDImage, vfs::write)) {
+      game->pak->append("sd.img", sd);
+    } else {
+      print("[SC64] Could not open SD card image: ", settings.nintendo64.summerCart64SDImage, "\n");
+    }
+  }
 
   if(!ares::Nintendo64::load(root, {"[Nintendo] ", name, " (", region, ")"})) return otherError;
 

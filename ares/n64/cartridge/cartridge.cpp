@@ -8,6 +8,7 @@ Cartridge& cartridge = cartridgeSlot.cartridge;
 #include "rtc.cpp"
 #include "joybus.cpp"
 #include "isviewer.cpp"
+#include "sc64.cpp"
 #include "debugger.cpp"
 #include "serialization.cpp"
 
@@ -24,7 +25,8 @@ auto Cartridge::connect() -> void {
   information.cic    = pak->attribute("cic");
 
   if(auto fp = pak->read("program.rom")) {
-    rom.allocate(fp->size());
+    //the SummerCart64 holds the ROM in 64 MiB of SDRAM that software may also write
+    rom.allocate(system.summerCart64 ? max(fp->size(), 64_MiB) : fp->size(), system.summerCart64 ? 0 : ~0);
     rom.load(fp);
   } else {
     rom.allocate(16);
@@ -48,6 +50,14 @@ auto Cartridge::connect() -> void {
 
   rtc.load();
 
+  if(system.summerCart64) {
+    sc64.present = 1;
+    sc64.sd = pak->write("sd.img");
+    sc64.tracer = node->append<Node::Debugger::Tracer::Notification>("SC64 USB", "Cartridge");
+    sc64.tracer->setAutoLineBreak(false);
+    sc64.tracer->setTerminal(true);
+  }
+
   if(rom.size <= 0x03ff'0000) {
     isviewer.ram.allocate(64_KiB);
     isviewer.tracer = node->append<Node::Debugger::Tracer::Notification>("ISViewer", "Cartridge");
@@ -59,6 +69,7 @@ auto Cartridge::connect() -> void {
   if(ram) pi.attach(ramDevice, 1);
   if(flash) pi.attach(flash, 1);
   if(isviewer.enabled()) pi.attach(isviewer, 1);
+  if(sc64.enabled()) pi.attach(sc64, 1);
 
   debugger.load(node);
 
@@ -72,12 +83,15 @@ auto Cartridge::disconnect() -> void {
   pi.detach(ramDevice);
   pi.detach(flash);
   pi.detach(isviewer);
+  pi.detach(sc64);
   debugger.unload(node);
   rom.reset();
   ram.reset();
   eeprom.reset();
   flash.reset();
   isviewer.ram.reset();
+  sc64.present = 0;
+  sc64.sd.reset();
   pak.reset();
   node.reset();
 }
@@ -103,6 +117,7 @@ auto Cartridge::save() -> void {
 auto Cartridge::power(bool reset) -> void {
   flash.power(reset);
   isviewer.ram.fill(0);
+  if(sc64.enabled()) sc64.power(reset);
   rtc.power(reset);
 }
 

@@ -12,7 +12,7 @@ struct Cartridge {
       if(address < 0x1000'0000 || address >= 0x1000'0000 + self.rom.size) return false;
       piView = {self.rom.data, self.rom.size};
       piViewOffset = address - 0x1000'0000;
-      piViewWritable = false;
+      piViewWritable = self.sc64.enabled() && self.sc64.romWritable();
       return true;
     }
   } romDevice{*this};
@@ -119,6 +119,53 @@ struct Cartridge {
     auto readHalf(u32 address) -> u16;
     auto writeHalf(u32 address, u16 data) -> void;
   } isviewer;
+
+  //SummerCart64: the flashcart's register interface, its data buffer and its
+  //SD card, as described in the SC64 docs (01_memory_map.md, 02_n64_commands.md)
+  struct SC64 : PIDevice {
+    Cartridge& self;
+    SC64(Cartridge& self) : self(self) {}
+
+    VFS::File sd;
+    Node::Debugger::Tracer::Notification tracer;
+    n1  present;
+
+    n1  unlocked;
+    n2  keyState;
+    u32 scr = 0;
+    u32 data[2] = {};
+    u32 config[15] = {};
+    n1  cmdIrqPending;
+    u32 sdSector = 0;
+    n1  sdInitialized;
+    n1  sdByteSwap;
+    u8  buffer[8_KiB];
+
+    u32 piAddr = 0;
+    u16 piLatch = 0;
+
+    auto enabled() const -> bool { return (bool)present; }
+    auto romWritable() const -> bool { return config[1]; }
+
+    auto piAddress(u32 address, PIDeviceTiming timing) -> bool override;
+    auto piReadHalf(PIDeviceTiming timing) -> maybe<u16> override;
+    auto piWriteHalf(u16 data, PIDeviceTiming timing) -> void override;
+
+    //sc64.cpp
+    auto power(bool reset) -> void;
+    auto readRegister(u32 address) -> u32;
+    auto writeRegister(u32 address, u32 data) -> void;
+    auto execute(u8 command) -> void;
+    auto translate(u32 address, u32 length) -> bool;
+    auto readByte(u32 address) -> u8;
+    auto writeByte(u32 address, u8 data) -> void;
+    auto saveType() -> u32;
+    auto sdCardOp(u32 address, u32 operation) -> u32;
+    auto sdRead(u32 address, u32 count) -> u32;
+    auto sdWrite(u32 address, u32 count) -> u32;
+    auto usbWrite(u32 address, u32 header) -> void;
+    auto serialize(serializer& s) -> void;
+  } sc64{*this};
 
   struct RTC {
     Cartridge& self;

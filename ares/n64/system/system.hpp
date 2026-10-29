@@ -4,6 +4,7 @@ struct System {
   bool homebrewMode = false;
   bool deterministicEntropy = false;
   bool expansionPak = true;
+  bool summerCart64 = false;
   u8 configuredControllerPakBankCount = 1;
   u8 controllerPakBankCount = 1;
 

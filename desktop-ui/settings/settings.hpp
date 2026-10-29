@@ -120,6 +120,8 @@ struct Settings : Markup::Node {
     bool supersampling = false;
     bool disableVideoInterfaceProcessing = false;
     bool weaveDeinterlacing = true;
+    bool summerCart64 = false;
+    string summerCart64SDImage;
   } nintendo64;
 
   struct PlayStation {
@@ -404,6 +406,14 @@ struct CoreSettings : VerticalLayout {
       Label nintendo64ControllerPakBankLabel{&nintendo64ControllerPakBankLayout, Size{0, layoutVertSize}};
       ComboButton nintendo64ControllerPakBankOption{&nintendo64ControllerPakBankLayout, Size{0, 0}};
       Label nintendo64ControllerPakBankHint{&nintendo64ControllerPakBankLayout, Size{0, layoutVertSize}};
+    HorizontalLayout nintendo64SummerCart64Layout{this, Size{~0, 0}, 5};
+      CheckLabel nintendo64SummerCart64Option{&nintendo64SummerCart64Layout, Size{0, 0}, 5};
+      Label nintendo64SummerCart64Hint{&nintendo64SummerCart64Layout, Size{0, layoutVertSize}};
+    HorizontalLayout nintendo64SDImageLayout{this, Size{~0, 0}, 5};
+      Label nintendo64SDImageLabel{&nintendo64SDImageLayout, Size{0, layoutVertSize}};
+      LineEdit nintendo64SDImagePath{&nintendo64SDImageLayout, Size{~0, 0}};
+      Button nintendo64SDImageAssign{&nintendo64SDImageLayout, Size{80, 0}};
+      Button nintendo64SDImageReset{&nintendo64SDImageLayout, Size{80, 0}};
     HorizontalLayout disableVideoInterfaceProcessingLayout{this, Size{~0, 0}, 5};
       CheckLabel disableVideoInterfaceProcessingOption{&disableVideoInterfaceProcessingLayout, Size{0, 0}, 5};
       Label disableVideoInterfaceProcessingHint{&disableVideoInterfaceProcessingLayout, Size{0, layoutVertSize}};
